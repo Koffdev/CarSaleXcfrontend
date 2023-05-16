@@ -1,0 +1,100 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}
+    CarSaleX | Авторизация
+{% endblock %}
+
+{% block page %}
+    Авторизация
+{% endblock %}
+
+{% block content %}
+    <div class="columns is-centered">
+        <div class="column is-8">
+            <div class="tile is-ancestor">
+                <div class="tile is-parent">
+                    <div class="card tile is-child">
+                        <header class="card-header">
+                            <p class="card-header-title">
+                                <span class="icon"><i class="mdi mdi-account-circle default"></i></span>
+                                Авторизация
+                            </p>
+                        </header>
+                        <div class="card-content">
+
+                            <form method="POST" action=".">
+                                {% csrf_token %}
+                                <div class="field is-horizontal">
+                                    <div class="field-label is-normal">
+                                        <label class="label">Логин</label>
+                                    </div>
+                                    <div class="field-body">
+                                        <div class="field">
+                                            <div class="control">
+                                                <label>
+                                                    <input type="text" autocomplete="on" name="username"
+                                                           placeholder="Логин"
+                                                           class="input" required>
+                                                </label>
+                                            </div>
+                                            <p class="help">Обязательно. Ваш e-mail</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="field is-horizontal">
+                                    <div class="field-label is-normal">
+                                        <label class="label">Пароль</label>
+                                    </div>
+                                    <div class="field-body">
+                                        <div class="field">
+                                            <div class="control">
+                                                <label>
+                                                    <input type="password" name="password"
+                                                           placeholder="Пароль"
+                                                           class="input" required>
+                                                </label>
+                                            </div>
+                                            <p class="help">Обязательно. Ваш пароль</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="field is-horizontal">
+                                    <div class="field-label is-normal"></div>
+                                    <div class="field-body">
+                                        <div class="field">
+                                            <div class="control">
+                                                <button type="submit" class="button is-primary">
+                                                    Войти
+                                                </button>
+
+                                                {% if form.errors %}
+                                                    {% for field in form %}
+                                                        {% for error in field.errors %}
+                                                            <div class="">
+                                                                <p class="help is-danger pt-2">{{ error|escape }}</p>
+                                                            </div>
+                                                        {% endfor %}
+                                                    {% endfor %}
+
+                                                    {% for error in form.non_field_errors %}
+                                                        <div class="">
+                                                            <p class="help is-danger pt-2">{{ error|escape }}</p>
+                                                        </div>
+                                                    {% endfor %}
+                                                {% endif %}
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

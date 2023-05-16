@@ -1,0 +1,231 @@
+{% extends 'core/base.html' %}
+{% load humanize %}
+{% load static %}
+
+{% block title %}
+    CarSaleX | Автомобили
+{% endblock %}
+
+{% block page %}
+    Автомобили
+{% endblock %}
+
+{% block content %}
+    <div>
+
+
+        <div class="is-flex is-justify-content-center ">
+            <a href="{% url 'car_orders' %}" type="button" class="button is-primary" style="max-width: 250px;">
+                Предзаказы автомобилей
+            </a>
+        </div>
+
+        <div class="card has-table mt-5">
+
+            <header class="card-header">
+                <p class="card-header-title">
+                    <span class="icon"><i class="mdi mdi-car-back"></i></span>
+                    Автомобили
+                </p>
+            </header>
+
+            <div class="card-content">
+                <div class="b-table has-pagination">
+                    <div class="table-wrapper has-mobile-cards">
+                        <table class="table is-fullwidth is-striped is-hoverable is-fullwidth">
+                            <thead>
+                            <tr>
+                                <th><a class="has-text-primary"
+                                       href="?sort1=brand">Марка | Модель</a></th>
+
+                                <th><a class="has-text-primary"
+                                       href="?sort1=year">Год вып.</a></th>
+
+                                <th><a class="has-text-primary"
+                                       href="?sort1=body_type">Тип кузова</a></th>
+
+                                <th><a class="has-text-primary"
+                                       href="?sort1=fuel_type">Двигатель</a></th>
+
+                                <th><a class="has-text-primary"
+                                       href="?sort1=transmission">Коробка передач</a></th>
+
+                                <th><a class="has-text-primary"
+                                       href="?sort1=engine_size">Объём двиг.</a></th>
+
+                                <th><a class="has-text-primary"
+                                       href="?sort1=horsepower">Мощность (л.с.)</a></th>
+
+                                <th><a class="has-text-primary"
+                                       href="?sort1=color">Цвет</a></th>
+
+                                <th><a class="has-text-primary"
+                                       href="?sort1=equipment">Комплектация</a></th>
+
+                                <th><a class="has-text-primary"
+                                       href="?sort1=price">Цена</a></th>
+
+{#                                <th><a class="has-text-primary"#}
+{#                                       href="?sort1=sales">Продажи</a></th>#}
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for car in car_list %}
+                                <tr>
+                                    <td data-label="Brand | Model">{{ car.brand }} | {{ car.model }}</td>
+                                    <td data-label="Year">{{ car.year }}</td>
+                                    <td data-label="Body type">{{ car.body_type }}</td>
+                                    <td data-label="Fuel type">{{ car.fuel_type }}</td>
+                                    <td data-label="Transmission">{{ car.transmission }}</td>
+                                    <td data-label="Engine size">{{ car.engine_size }}</td>
+                                    <td data-label="Horsepowers">{{ car.horsepower }}</td>
+                                    <td data-label="Color">{{ car.color }}</td>
+                                    <td data-label="Equipment">{{ car.equipment }}</td>
+                                    <td data-label="Price">{{ car.price|intcomma }} $</td>
+{#                                    <td data-label="Sales">{{ car.sales }}</td>#}
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="notification">
+                        <div class="level">
+                            <div class="level-left">
+                                <div class="level-item">
+                                    <div class="buttons has-addons">
+                                        {% for p in car_list.paginator.page_range %}
+                                            <a href="?sort1={{ sort_field1|default:'brand' }}&page1={{ p }}"
+                                               type="button"
+                                               class="button {% if p == current_page_number1 %} is-active {% endif %}"> {{ p }} </a>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="level-right">
+                                <div class="level-item">
+                                    <small>Страница {{ current_page_number1 }} из {{ car_list.paginator.num_pages }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <header class="card-header">
+                <p class="card-header-title">
+                    <span class="icon"><i class="mdi mdi-chart-arc"></i></span>
+                    Диаграммы | Графики
+                </p>
+                <a href="" class="card-header-icon">
+                    <span class="icon"><i class="mdi mdi-reload"></i></span>
+                </a>
+            </header>
+            <div class="card-content">
+                <div class="canvas-container">
+                    <div class="columns">
+                        <div class="column">
+                            <div class="card is-centered">
+                                <canvas id="Cars" class="is-maximized"></canvas>
+                                <script>
+                                    function getRandomColor() {
+                                        const letters = '0123456789ABCDEF';
+                                        let color = '#';
+                                        for (let i = 0; i < 6; i++) {
+                                            color += letters[Math.floor(Math.random() * 16)];
+                                        }
+                                        return color;
+                                    }
+                                </script>
+                                <script>
+                                    document.addEventListener('DOMContentLoaded', function () {
+                                        const ctx = document.getElementById('Cars').getContext('2d');
+                                        const uniqueBrands = Array.from(new Set([{% for car in cars %}'{{ car.brand }}'
+                                            ,{% endfor %}]));
+                                        const brandColors = uniqueBrands.map(() => getRandomColor());
+                                        const chartData = {
+                                            labels: uniqueBrands,
+                                            datasets: [
+                                                {
+                                                    data: {{ brand_counts }},
+                                                    backgroundColor: brandColors,
+                                                    hoverBackgroundColor: brandColors,
+                                                },
+                                            ],
+                                        };
+
+
+                                        const chart = new Chart(ctx, {
+                                            type: 'pie',
+                                            data: chartData,
+                                        });
+                                    });
+                                </script>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="card is-centered">
+                                <canvas id="Cars2" class="is-maximized"></canvas>
+                                <script>
+                                    document.addEventListener('DOMContentLoaded', function () {
+                                        const ctx = document.getElementById('Cars2').getContext('2d');
+                                        const uniqueBrands = Array.from(new Set([{% for car in cars %}'{{ car.brand }}',
+                                        {% endfor %}]));
+                                        const brandColors = uniqueBrands.map(() => getRandomColor());
+                                        const chartData = {
+                                            labels: uniqueBrands,
+                                            datasets: [
+                                                {
+                                                    data: {{ brand_counts }},
+                                                    backgroundColor: brandColors,
+                                                    hoverBackgroundColor: brandColors,
+                                                },
+                                            ],
+                                        };
+
+                                        const chart = new Chart(ctx, {
+                                            type: 'bar',
+                                            data: chartData,
+                                            options: {
+                                                responsive: true,
+                                                scales: {
+                                                    x: {
+                                                        grid: {
+                                                            display: false,
+                                                        },
+                                                    },
+                                                    y: {
+                                                        beginAtZero: true,
+                                                        grid: {
+                                                            color: 'rgba(0, 0, 0, 0.1)',
+                                                        },
+                                                    },
+                                                },
+                                            },
+                                        });
+                                    });
+                                </script>
+                            </div>
+                        </div>
+                        <style>
+                            .canvas-container {
+                                max-width: 800px; /* Желаемая максимальная ширина графика */
+                                margin: 0 auto; /* Центрирование контейнера */
+                            }
+
+                            .is-maximized {
+                                width: 100% !important;
+                                height: auto !important;
+                            }
+                        </style>
+                    </div>
+                </div>
+                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+

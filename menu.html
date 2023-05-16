@@ -1,0 +1,157 @@
+{% load static %}
+{% load has_group %}
+
+<div class="menu">
+    <nav id="navbar-main" class="navbar is-fixed-top">
+        <div class="navbar-brand">
+            <a class="navbar-item is-hidden-desktop jb-aside-mobile-toggle">
+                <span class="icon"><i class="mdi mdi-forwardburger mdi-24px"></i></span>
+            </a>
+            <div class="navbar-item has-control">
+                <div class="control"><label>
+                    <input placeholder="Искать везде..." class="input">
+                </label></div>
+            </div>
+        </div>
+        <div class="navbar-brand is-right">
+            <a class="navbar-item is-hidden-desktop jb-navbar-menu-toggle" data-target="navbar-menu">
+                <span class="icon"><i class="mdi mdi-dots-vertical"></i></span>
+            </a>
+        </div>
+        <div class="navbar-menu fadeIn animated faster" id="navbar-menu">
+            <div class="navbar-end">
+                <div class="navbar-item has-dropdown has-dropdown-with-icons has-divider has-user-avatar is-hoverable">
+                    <a class="navbar-link is-arrowless"
+                       href="{% if request.user.is_authenticated %} {% url 'profile' %} {% else %} {% url 'login' %} {% endif %}">
+
+                        {% if request.user.is_authenticated %}
+                            <div class="is-user-avatar">
+                                <img src="https://avatars.dicebear.com/v2/initials/{{ request.user.get_full_name }}.svg"
+                                     alt="{{ request.user.get_full_name }}">
+                            </div>
+                            <div class="is-user-name">
+                                <span>{{ request.user.get_full_name }}</span>
+                            </div>
+                            <span class="icon"><i class="mdi mdi-chevron-down"></i></span>
+                        {% else %}
+                            <div class="login">
+                                <span>Вход</span>
+                            </div>
+                        {% endif %}
+                    </a>
+                    {% if request.user.is_authenticated %}
+                        <div class="navbar-dropdown">
+                            <a href="{% url 'profile' %}" class="navbar-item has-text-primary is-active">
+                                <span class="icon"><i class="mdi mdi-account"></i></span>
+                                <span>Профиль</span>
+                            </a>
+                            <a class="navbar-item">
+                                <span class="icon"><i class="mdi mdi-email"></i></span>
+                                <span>Сообщения</span>
+                            </a>
+                            <hr class="navbar-divider">
+                            <a href="{% url 'logout' %}" class="navbar-item">
+                                <span class="icon"><i class="mdi mdi-logout"></i></span>
+                                <span>Выход</span>
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+                <a href="#about" title="About"
+                   class="navbar-item has-divider is-desktop-icon-only">
+                    <span class="icon"><i class="mdi mdi-help-circle-outline"></i></span>
+                    <span>О нас</span>
+                </a>
+                <a href="{% url 'logout' %}" title="Log out" class="navbar-item is-desktop-icon-only">
+                    <span class="icon"><i class="mdi mdi-logout"></i></span>
+                    <span>Выход</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <aside class="aside is-placed-left is-expanded">
+        <div class="container">
+            <figure class="image m-4 pb-4 is-150x40 is-centered">
+                <a href="{% url 'index' %}"><img src="{% static 'img/logo.png' %}" alt="{% url 'index' %}"></a>
+            </figure>
+        </div>
+        <div class="menu is-menu-main">
+            <p class="menu-label">Основные</p>
+            <ul class="menu-list">
+                <li>
+                    <a href="{% url 'index' %}" class="has-icon">
+                        <span class="icon"><i class="mdi mdi-desktop-mac"></i></span>
+                        <span class="menu-item-label">Dashboard</span>
+                    </a>
+                </li>
+                {% if user.is_authenticated %}
+                    <li>
+                        <a href="{% url 'report' %}" class="has-icon">
+                            <span class="icon has-update-mark"><i class="mdi mdi-square-edit-outline"></i></span>
+                            <span class="menu-item-label">Отчёты</span>
+                        </a>
+                    </li>
+                {% endif %}
+                <li>
+                    <a href="{% if request.user.is_authenticated %} {% url 'profile' %} {% else %} {% url 'login' %} {% endif %}"
+                       class="has-icon">
+                        <span class="icon"><i class="mdi mdi-account-circle"></i></span>
+                        <span class="menu-item-label">Профиль</span>
+                    </a>
+                </li>
+            </ul>
+            <p class="menu-label">Данные</p>
+            <ul class="menu-list">
+                {% if user.is_authenticated %}
+                    <li>
+                        <a href="{% url 'orders' %}" class="has-icon">
+                            <span class="icon"><i class="mdi mdi-application-import"></i></span>
+                            <span class="menu-item-label">Заказы</span>
+                        </a>
+                    </li>
+                {% endif %}
+                {% if user.is_authenticated %}
+                    <li>
+                        <a href="{% url 'clients' %}" class="has-icon">
+                            <span class="icon"><i class="mdi mdi-clipboard-account-outline"></i></span>
+                            <span class="menu-item-label">Клиенты</span>
+                        </a>
+                    </li>
+                {% endif %}
+                <li>
+                    <a href="{% url 'cars' %}" class="has-icon">
+                        <span class="icon"><i class="mdi mdi-car-back"></i></span>
+                        <span class="menu-item-label">Автомобили</span>
+                    </a>
+                </li>
+
+            </ul>
+            <p class="menu-label">Утилиты</p>
+            <ul class="menu-list">
+                {% if user.is_superuser %}
+                    <li>
+                        <a href="" class="has-icon">
+                            <span class="icon"><i class="mdi mdi-account-group"></i></span>
+                            <span class="menu-item-label">Сотрудники</span>
+                        </a>
+                    </li>
+                {% endif %}
+                <li>
+                    <a href="" class="has-icon">
+                        <span class="icon"><i class="mdi mdi-settings"></i></span>
+                        <span class="menu-item-label">Настройки</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="" class="has-icon">
+                        <span class="icon"><i class="mdi mdi-help-circle"></i></span>
+                        <span class="menu-item-label">О нас</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </aside>
+
+</div>

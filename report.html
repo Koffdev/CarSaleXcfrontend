@@ -1,0 +1,209 @@
+{% extends 'core/base.html' %}
+{% load has_group %}
+{% load static %}
+
+{% block title %}
+    CarSaleX | Отчёты
+{% endblock %}
+
+{% block page %}
+    Отчёты
+{% endblock %}
+{% block content %}
+    <div>
+
+        {% if user.is_superuser or request.user|has_group:"accountants" %}
+            <div class="is-flex is-justify-content-center">
+                <a href="{% url 'generate_report' %}" type="button" class="button is-primary" style="max-width: 200px;">
+                    Сгенерировать отчёт
+                </a>
+            </div>
+        {% endif %}
+
+
+
+        <div class="card has-table mt-5">
+            <header class="card-header">
+                <p class="card-header-title">
+                    <span class="icon"><i class="mdi mdi-square-edit-outline"></i></span>
+                    Документы
+                </p>
+
+                <div class="tabs is-toggle p-2">
+                    <ul>
+                        <li><a href="{% url 'report' %}"
+                               class="{% if not active_category %}has-text-primary{% else %}{% endif %}">все
+                        </a></li>
+                        {% for category in categories %}
+                            <li><a href="{% url 'report' %}?category={{ category.slug }}"
+                                   class="{% if category.slug == active_category %}has-text-primary{% else %}{% endif %}">{{ category.name }}</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+            </header>
+            <div class="card-content">
+                <div class="b-table has-pagination">
+                    <div class="table-wrapper has-mobile-cards">
+                        <table class="table is-fullwidth is-striped is-hoverable is-fullwidth">
+                            <thead>
+                            <tr>
+                                <th class="has-text-primary"></th>
+
+                                <th class="has-text-primary">Файл</th>
+
+                                <th class="has-text-primary">Категория</th>
+
+                                <th class="has-text-primary">Примечания</th>
+
+                                <th class="has-text-primary">Дата создания</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for report in report_list %}
+                                <tr>
+                                    <td class="is-image-cell">
+                                        <div class="image">
+                                            <img src="https://avatars.dicebear.com/v2/initials/{{ report.id }}.svg"
+                                                 class="is-rounded" alt="{{ report.id }}">
+                                        </div>
+                                    </td>
+                                    <td data-label="File"><a href="{{ report.file.url }}"
+                                                             target="_blank">{{ report.file.name }}</a></td>
+                                    <td data-label="Category">{{ report.category }}</td>
+                                    <td data-label="Notes">{{ report.notes }}</td>
+                                    <td data-label="Created at">{{ report.created_at }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="notification">
+                        <div class="level">
+                            <div class="level-left">
+                                <div class="level-item">
+                                    <div class="buttons has-addons">
+                                        {% for p in report_list.paginator.page_range %}
+                                            <a href="?page={{ p }}"
+                                               type="button"
+                                               class="button {% if p == current_page_number %} is-active {% endif %}"> {{ p }} </a>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="level-right">
+                                <div class="level-item">
+                                    <small>Страница {{ current_page_number }}
+                                        из {{ report_list.paginator.num_pages }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% if user.is_superuser or request.user|has_group:"accountants" %}
+
+            <div class="card mt-5">
+                <header class="card-header">
+                    <p class="card-header-title">
+                        <span class="icon"><i class="mdi mdi-square-edit-outline"></i></span>
+                        Загрузить новый документ
+                    </p>
+                </header>
+                <div class="card-content">
+                    <form method="POST" action="{% url 'upload_report' %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <div class="field is-horizontal">
+                            <div class="field-label is-normal">
+                                <label class="label">Документ</label>
+                            </div>
+                            <div class="field-body">
+                                <div class="field mb-4">
+                                    <div class="field file">
+                                        <label class="upload control">
+                                            <a class="button is-primary is-outlined">
+                                                <span class="icon"><i class="mdi mdi-upload"></i></span>
+                                                <span>Файл</span>
+                                            </a>
+                                            <input type="file" name="file" required>
+                                        </label>
+                                    </div>
+                                    <p class="help">Выберите файл</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field is-horizontal">
+                            <div class="field-label is-normal">
+                                <label class="label">Категория</label>
+                            </div>
+                            <div class="field-body">
+                                <div class="field is-narrow mb-4">
+                                    <div class="control">
+                                        <div class="select is-fullwidth">
+                                            <label>
+                                                <select name="category" class="category" required>
+                                                    <option value="">Выбрать категорию</option>
+                                                    {% for category in categories %}
+                                                        <option value="{{ category.id }}"> {{ category.name }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <p class="help">Выберите категорию отчёта</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field is-horizontal">
+                            <div class="field-label is-normal">
+                                <label class="label">Примечания</label>
+                            </div>
+                            <div class="field-body">
+                                <div class="field mb-4">
+                                    <div class="control">
+                                        <label>
+                                        <textarea name="notes"
+                                                  class="textarea"></textarea>
+                                        </label>
+                                    </div>
+                                    <p class="help">Описание документа</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field is-horizontal">
+                            <div class="field-label is-normal"></div>
+                            <div class="field-body">
+                                <div class="field">
+                                    <div class="control">
+                                        <button type="submit" class="button is-primary">
+                                            Подтвердить
+                                        </button>
+                                    </div>
+
+                                    {% if messages %}
+                                        <ul class="messages">
+                                            {% for message in messages %}
+                                                <li{% if message.tags %}
+                                                    class="{{ message.tags }}"{% endif %}>
+                                                    <p class="help is-danger pt-3">{{ message }}</p>
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% endif %}
+
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        {% endif %}
+{% endblock %}

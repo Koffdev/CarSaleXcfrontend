@@ -1,0 +1,139 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% load has_group %}
+{% block title %}
+    CarSaleX | Заказы
+{% endblock %}
+
+{% block page %}
+    Заказы
+{% endblock %}
+
+{% block content %}
+    <div>
+
+        {% if user.is_superuser or request.user|has_group:"managers" %}
+            <div class="is-flex is-justify-content-center">
+                <a href="{% url 'add_order' %}" type="button" class="button is-primary" style="max-width: 200px;">
+                    Оформить новый заказ
+                </a>
+            </div>
+        {% endif %}
+
+        {% include 'order/orders_table.html' %}
+        <div class="card">
+            <header class="card-header">
+                <p class="card-header-title">
+                    <span class="icon"><i class="mdi mdi-chart-arc"></i></span>
+                    Диаграммы | Графики
+                </p>
+                <a href="" class="card-header-icon">
+                    <span class="icon"><i class="mdi mdi-reload"></i></span>
+                </a>
+            </header>
+            <div id="chart" class="card-content">
+                <div class="canvas-container">
+                    <div class="columns">
+                        <div class="column">
+                            <div class="card is-centered">
+                                <canvas id="Orders" class="is-maximized"></canvas>
+                                <script>
+                                    function getRandomColor() {
+                                        const letters = '0123456789ABCDEF';
+                                        let color = '#';
+                                        for (let i = 0; i < 6; i++) {
+                                            color += letters[Math.floor(Math.random() * 16)];
+                                        }
+                                        return color;
+                                    }
+                                </script>
+                                <script>
+                                    document.addEventListener('DOMContentLoaded', function () {
+                                        const ctx = document.getElementById('Orders').getContext('2d');
+                                        const unique_methods = Array.from(new Set([{% for order in orders %}'{{ order.payment_method }}',
+                                        {% endfor %}]));
+                                        const methodColor = unique_methods.map(() => getRandomColor());
+                                        const chartData = {
+                                            labels: unique_methods,
+                                            datasets: [
+                                                {
+                                                    data: {{ method_count }},
+                                                    backgroundColor: methodColor,
+                                                    hoverBackgroundColor: methodColor,
+                                                },
+                                            ],
+                                        };
+
+
+                                        const chart = new Chart(ctx, {
+                                            type: 'pie',
+                                            data: chartData,
+                                        });
+                                    });
+                                </script>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="card is-centered">
+                                <canvas id="Order2" class="is-maximized"></canvas>
+                                <script>
+                                    document.addEventListener('DOMContentLoaded', function () {
+                                        const ctx = document.getElementById('Order2').getContext('2d');
+                                        const unique_status = Array.from(new Set([{% for order in orders %}'{{ order.status }}',
+                                        {% endfor %}]));
+                                        const statusColors = unique_status.map(() => getRandomColor());
+                                        const chartData = {
+                                            labels: unique_status,
+                                            datasets: [
+                                                {
+                                                    data: {{ status_count }},
+                                                    backgroundColor: statusColors,
+                                                    hoverBackgroundColor: statusColors,
+                                                },
+                                            ],
+                                        };
+
+                                        const chart = new Chart(ctx, {
+                                            type: 'bar',
+                                            data: chartData,
+                                            options: {
+                                                responsive: true,
+                                                scales: {
+                                                    x: {
+                                                        grid: {
+                                                            display: false,
+                                                        },
+                                                    },
+                                                    y: {
+                                                        beginAtZero: true,
+                                                        grid: {
+                                                            color: 'rgba(0, 0, 0, 0.1)',
+                                                        },
+                                                    },
+                                                },
+                                            },
+                                        });
+                                    });
+                                </script>
+                            </div>
+                        </div>
+                        <style>
+                            .canvas-container {
+                                max-width: 800px;
+                                margin: 0 auto;
+                            }
+
+                            .is-maximized {
+                                width: 100% !important;
+                                height: auto !important;
+                            }
+                        </style>
+                    </div>
+                </div>
+                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            </div>
+        </div>
+
+    </div>
+
+{% endblock %}

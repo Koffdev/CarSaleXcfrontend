@@ -1,0 +1,256 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% load has_group %}
+
+{% block title %}
+    CarSaleX | Клиенты
+{% endblock %}
+
+{% block page %}
+    Клиенты
+{% endblock %}
+
+{% block content %}
+    {#    <div class="notification is-info">#}
+    {#        <div class="level">#}
+    {#            <div class="level-left">#}
+    {#                <div class="level-item">#}
+    {#                    <div>#}
+    {#                        <span class="icon"><i class="mdi mdi-buffer default"></i></span>#}
+    {#                        <b>Responsive table</b>#}
+    {#                    </div>#}
+    {#                </div>#}
+    {#            </div>#}
+    {#            <div class="level-right">#}
+    {#                <button type="button" class="button is-small is-white jb-notification-dismiss">Dismiss</button>#}
+    {#            </div>#}
+    {#        </div>#}
+    {#    </div>#}
+
+    <div class="card has-table">
+        <header class="panel-block">
+            <p class="card-header-title">
+                <span class="icon"><i class="mdi mdi-account-multiple"></i></span>
+                Клиенты
+            </p>
+            <div class="panel-block">
+                <form method="get" action=".">
+                    {% csrf_token %}
+                    <p class="control has-icons-left">
+                        <label>
+                            <input class="input" type="text" name="query" placeholder="Поиск">
+                        </label>
+                        <span class="icon is-left">
+                        <i class="mdi mdi-magnify" aria-hidden="true"></i>
+                    </span>
+                    </p>
+                </form>
+            </div>
+        </header>
+        <div class="card-content">
+            <div class="b-table has-pagination">
+                <div class="table-wrapper has-mobile-cards">
+                    <table class="table is-fullwidth is-striped is-hoverable is-fullwidth">
+                        <thead>
+                        <tr>
+                            <th class="has-text-primary"></th>
+                            <th class="has-text-primary">Имя</th>
+                            <th class="has-text-primary">Почта</th>
+                            <th class="has-text-primary">Номер тел.</th>
+                            <th class="has-text-primary">Источник привлечения</th>
+                            <th class="has-text-primary">Дата регистрации</th>
+                            <th class="has-text-primary"></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for client in client_list %}
+
+                            <tr>
+                                <td class="is-image-cell">
+                                    <div class="image">
+                                        <img src="https://avatars.dicebear.com/v2/initials/{{ client.first_name }}-{{ client.last_name }}.svg"
+                                             class="is-rounded" alt="">
+                                    </div>
+                                </td>
+                                <td data-label="Name"><a
+                                        href="{% url 'client_info' id=client.id %}">{{ client.first_name }} {{ client.last_name }}</a>
+                                </td>
+                                <td data-label="Email">{{ client.email }}</td>
+                                <td data-label="Phone number">{{ client.phone_number }}</td>
+                                <td data-label="Lead Source">{{ client.lead_source }}</td>
+
+                                <td data-label="Created">
+                                    <small class="has-text-grey is-abbr-like"
+                                           title="{{ client.created_at }}">{{ client.created_at }}</small>
+                                </td>
+                                {% if user.is_superuser or request.user|has_group:"managers" %}
+                                    <td class="is-actions-cell">
+                                        <div class="buttons is-right">
+                                            <a class="button is-small is-primary" type="button"
+                                               href="{% url 'client_info' id=client.id %}">
+                                                <span class="icon"><i class="mdi mdi-pencil"></i></span>
+                                            </a>
+                                        </div>
+                                    </td>
+                                {% endif %}
+                            </tr>
+
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="notification">
+                    <div class="level">
+                        <div class="level-left">
+                            <div class="level-item">
+                                <div class="buttons has-addons">
+                                    {% for p in client_list.paginator.page_range %}
+                                        <a href="?page={{ p }}"
+                                           type="button"
+                                           class="button {% if p == current_page_number %} is-active {% endif %}"> {{ p }} </a>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="level-right">
+                            <div class="level-item">
+                                <small>Страница {{ current_page_number }} из {{ client_list.paginator.num_pages }}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <header class="card-header">
+                <p class="card-header-title">
+                    <span class="icon"><i class="mdi mdi-chart-arc"></i></span>
+                    Диаграммы | Графики
+                </p>
+                <a href="" class="card-header-icon">
+                    <span class="icon"><i class="mdi mdi-reload"></i></span>
+                </a>
+            </header>
+            <div class="card-content">
+                <div class="canvas-container">
+                    <div class="columns">
+                        <div class="column">
+                            <div class="card is-centered">
+                                <canvas id="Clients" class="is-maximized"></canvas>
+                                <script>
+                                        function getRandomColor() {
+                                            const letters = '0123456789ABCDEF';
+                                            let color = '#';
+                                            for (let i = 0; i < 6; i++) {
+                                                color += letters[Math.floor(Math.random() * 16)];
+                                            }
+                                            return color;
+                                    }
+                                </script>
+                                <script>
+
+                                    document.addEventListener('DOMContentLoaded', function () {
+                                        const ctx = document.getElementById('Clients').getContext('2d');
+                                        const unique_leads = Array.from(new Set([{% for client in clients %}'{{ client.lead_source }}',
+                                        {% endfor %}]));
+                                        const leadColors = unique_leads.map(() => getRandomColor());
+                                        const chartData = {
+                                            labels: unique_leads,  // Подписи секций круговой диаграммы
+                                            datasets: [
+                                                {
+                                                    data: {{ lead_count }},
+                                                    backgroundColor: leadColors,  // Цвета секций
+                                                    hoverBackgroundColor: leadColors,  // Цвета при наведении на секции
+                                                },
+                                            ],
+                                        };
+
+
+                                        const chart = new Chart(ctx, {
+                                            type: 'pie',
+                                            data: chartData,
+                                        });
+                                    });
+                                </script>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="card is-centered">
+                                <canvas id="Client2" class="is-maximized"></canvas>
+                                <script>
+                                    document.addEventListener('DOMContentLoaded', function () {
+                                        const ctx = document.getElementById('Client2').getContext('2d');
+                                        const unique_leads = Array.from(new Set([{% for client in clients %}'{{ client.lead_source }}',
+                                        {% endfor %}]));
+                                        const leadColors = unique_leads.map(() => getRandomColor());
+                                        const chartData = {
+                                            labels: unique_leads,  // Подписи столбцов
+                                            datasets: [
+                                                {
+                                                    data: {{ lead_count }},
+                                                    backgroundColor: leadColors,  // Цвета столбцов
+                                                    hoverBackgroundColor: leadColors,  // Цвета при наведении на столбцы
+                                                },
+                                            ],
+                                        };
+
+                                        const chart = new Chart(ctx, {
+                                            type: 'bar',
+                                            data: chartData,
+                                            options: {
+                                                responsive: true,
+                                                scales: {
+                                                    x: {
+                                                        grid: {
+                                                            display: false, // Убираем сетку для оси X
+                                                        },
+                                                    },
+                                                    y: {
+                                                        beginAtZero: true,
+                                                        grid: {
+                                                            color: 'rgba(0, 0, 0, 0.1)', // Цвет сетки для оси Y
+                                                        },
+                                                    },
+                                                },
+                                            },
+                                        });
+                                    });
+                                </script>
+                            </div>
+                        </div>
+                        <style>
+                            .canvas-container {
+                                max-width: 800px; /* Желаемая максимальная ширина графика */
+                                margin: 0 auto; /* Центрирование контейнера */
+                            }
+
+                            .is-maximized {
+                                width: 100% !important;
+                                height: auto !important;
+                            }
+                        </style>
+                    </div>
+                </div>
+                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            </div>
+        </div>
+    </div>
+
+    {#    <div class="notification is-info">#}
+    {#        <div class="level">#}
+    {#            <div class="level-left">#}
+    {#                <div class="level-item">#}
+    {#                    <div>#}
+    {#                        <span class="icon"><i class="mdi mdi-buffer default"></i></span>#}
+    {#                        <b>Tightly wrapped.</b> Table header becomes card header#}
+    {#                    </div>#}
+    {#                </div>#}
+    {#            </div>#}
+    {#            <div class="level-right">#}
+    {#                <button type="button" class="button is-small is-white jb-notification-dismiss">Dismiss</button>#}
+    {#            </div>#}
+    {#        </div>#}
+    {#    </div>#}
+
+
+{% endblock %}

@@ -1,0 +1,249 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% load has_group %}
+
+{% block title %}
+    CarSaleX | Автомобили
+{% endblock %}
+
+{% block page %}
+    Автомобили
+    <li>
+        Предзаказы авто
+    </li>
+{% endblock %}
+
+
+{% load static %}
+
+{% block content %}
+
+
+    <div class="columns is-flex-direction-column">
+
+        <div class="column">
+
+            <div class="card has-table">
+                <header class="card-header">
+                    <p class="card-header-title">
+                        <span class="icon"><i class="mdi mdi-car-back"></i></span>
+                        Предзаказ автомобиля
+                    </p>
+
+                </header>
+                <div class="card-content">
+                    <div class="b-table has-pagination">
+                        <div class="table-wrapper has-mobile-cards">
+                            <table class="table is-fullwidth is-striped is-hoverable is-fullwidth">
+                                <thead>
+                                <tr>
+                                    <th><a class="has-text-primary"
+                                           href="?sort2=brand">Марка | Модель</a></th>
+
+                                    <th><a class="has-text-primary"
+                                           href="?sort2=year">Год выпуска</a></th>
+
+                                    <th><a class="has-text-primary"
+                                           href="?sort2=modification">Тех. характеристика</a></th>
+
+                                    <th><a class="has-text-primary"
+                                           href="?sort2=client">Клиент</a></th>
+
+                                    <th><a class="has-text-primary"
+                                           href="?sort2=created_at">Дата создания</a></th>
+
+                                    <th><a class="has-text-primary"
+                                           href="?sort2=status">Статус</a></th>
+
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for car in order_car_list %}
+                                    <tr>
+                                        <td data-label="Brand | Model">{{ car.brand }} | {{ car.model }}</td>
+                                        <td data-label="Year">{{ car.year }}</td>
+                                        <td data-label="Modification">{{ car.modification }}</td>
+                                        <td data-label="Client">{{ car.client }}</td>
+                                        <td data-label="Created at">{{ car.created_at }}</td>
+                                        <td data-label="Status">{{ car.status }}</td>
+
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="notification">
+                            <div class="level">
+                                <div class="level-left">
+                                    <div class="level-item">
+                                        <div class="buttons has-addons">
+                                            {% for p in order_car_list.paginator.page_range %}
+                                                <a href="?sort2={{ sort_field2|default:'status' }}&page2={{ p }}"
+                                                   type="button"
+                                                   class="button {% if p == current_page_number2 %} is-active {% endif %}"> {{ p }} </a>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="level-right">
+                                    <div class="level-item">
+                                        <small>Страница {{ current_page_number2 }}
+                                            из {{ order_car_list.paginator.num_pages }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if user.is_superuser or request.user|has_group:"managers" %}
+            <div class="column">
+
+                <div class="card">
+                    <header class="card-header">
+                        <p class="card-header-title">
+                            <span class="icon"><i class="mdi mdi-car-back"></i></span>
+                            Информация о предзаказе автомобиля
+                        </p>
+                    </header>
+                    <div class="card-content">
+                        <form method="POST" action="{% url 'add_order_car' %}">
+                            {% csrf_token %}
+
+                            <div class="field is-horizontal">
+                                <div class="field-label is-normal">
+                                    <label class="label">Клиент</label>
+                                </div>
+                                <div class="field-body">
+                                    <div class="field is-narrow mb-4">
+                                        <div class="control">
+                                            <div class="select is-fullwidth">
+                                                <label>
+                                                    <select name="client" class="select" required>
+                                                        <option value="">Выбрать клиента</option>
+                                                        {% for client in clients %}
+                                                            <option value="{{ client.id }}"> {{ client.get_full_name }}
+                                                                | {{ client.email }} |
+                                                                {{ client.phone_number }} | {{ client.date_of_birth }}
+                                                            </option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <p class="help">Выберите клиента</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="field is-horizontal">
+                                <div class="field-label is-normal">
+                                    <label class="label">Марка</label>
+                                </div>
+                                <div class="field-body">
+                                    <div class="field">
+                                        <div class="control">
+                                            <label>
+                                                <input type="text" name="brand"
+                                                       class="input"
+                                                       placeholder="Марка" required>
+                                            </label>
+                                        </div>
+                                        <p class="help">Введите марку авто</p></div>
+                                </div>
+                            </div>
+
+
+                            <div class="field is-horizontal">
+                                <div class="field-label is-normal">
+                                    <label class="label">Модель</label>
+                                </div>
+                                <div class="field-body">
+                                    <div class="field">
+                                        <div class="control">
+                                            <label>
+                                                <input type="text" name="model"
+                                                       class="input"
+                                                       placeholder="Модель" required>
+                                            </label>
+                                        </div>
+                                        <p class="help">Выберите модель авто</p></div>
+                                </div>
+                            </div>
+
+
+                            <div class="field is-horizontal">
+                                <div class="field-label is-normal">
+                                    <label class="label">Год выпуска</label>
+                                </div>
+                                <div class="field-body">
+                                    <div class="field">
+                                        <div class="control">
+                                            <label>
+                                                <input type="number" name="year"
+                                                       class="input"
+                                                       placeholder="Год" required>
+                                            </label>
+                                        </div>
+                                        <p class="help">Введите год выпуска авто</p></div>
+                                </div>
+                            </div>
+
+                            <div class="field is-horizontal">
+                                <div class="field-label is-normal">
+                                    <label class="label">Тех. характеристика</label>
+                                </div>
+                                <div class="field-body">
+                                    <div class="field mb-4">
+                                        <div class="control">
+                                            <label>
+                                        <textarea name="Техническая характеристика"
+                                                  class="textarea"
+                                                  required></textarea>
+                                            </label>
+                                        </div>
+                                        <p class="help">Введите техническую характеристику (мощность, объём двигателя, тип двигателя,
+                                            ...)</p>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="field is-horizontal">
+                                <div class="field-label is-normal"></div>
+                                <div class="field-body">
+                                    <div class="field">
+                                        <div class="control">
+                                            <button type="submit" class="button is-primary">
+                                                Подтвердить заказ
+                                            </button>
+                                        </div>
+
+                                        {% if messages %}
+                                            <ul class="messages">
+                                                {% for message in messages %}
+                                                    <li{% if message.tags %}
+                                                        class="{{ message.tags }}"{% endif %}>
+                                                        <p class="help is-danger pt-3">{{ message }}</p>
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        {% endif %}
+
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+
+{% endblock %}
+
+

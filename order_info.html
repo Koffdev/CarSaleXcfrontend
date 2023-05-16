@@ -1,0 +1,336 @@
+{% extends 'core/base.html' %}
+{% load humanize %}
+{% load static %}
+{% load has_group %}
+
+{% block title %}
+    CarSaleX | Заказы | {{ order.id }}
+{% endblock %}
+
+{% block page %}
+    Order
+    <li>
+        {{ order.id }} ({{ order.client.get_full_name }})
+    </li>
+{% endblock %}
+
+{% block content %}
+    <div class="tile is-ancestor">
+        <div class="tile is-parent is-3">
+            <div class="card tile is-child">
+                <header class="card-header">
+                    <p class="card-header-title">
+                        <span class="icon"><i class="mdi mdi-account default"></i></span>
+                        Информация о клиенте
+                    </p>
+                </header>
+                <div class="card-content">
+                    <div class="is-user-avatar image has-max-width is-aligned-center">
+                        <img src="https://avatars.dicebear.com/v2/initials/{{ order.client.get_full_name }}.svg"
+                             alt="{{ order.client.get_full_name }}">
+                    </div>
+                    <hr>
+                    <div class="field">
+                        <label class="label">Имя</label>
+                        <div class="control is-clearfix">
+                            <label>
+                                <input type="text" readonly value="{{ order.client.get_full_name }}"
+                                       class="input is-static">
+                            </label>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="field">
+                        <label class="label">Почта</label>
+                        <div class="control is-clearfix">
+                            <label>
+                                <input type="text" readonly value="{{ order.client.email }}" class="input is-static">
+                            </label>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="field">
+                        <label class="label">Дата рождения</label>
+                        <div class="control is-clearfix">
+                            <label>
+                                <input type="date" readonly value="{{ order.client.date_of_birth|date:'Y-m-d' }}"
+                                       class="input is-static">
+                            </label>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="field">
+                        <label class="label">Номер телефона</label>
+                        <div class="control is-clearfix">
+                            <label>
+                                <input type="text" readonly value="{{ order.client.phone_number }}"
+                                       class="input is-static">
+                            </label>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="field">
+                        <label class="label">Предпочитаемый способ связи</label>
+                        <div class="control is-clearfix">
+                            <label>
+                                <input type="text" readonly value="{{ order.client.preferred_contact_method }}"
+                                       class="input is-static">
+                            </label>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="field">
+                        <a href="{% url 'client_info' id=order.client.id %}" type="button"
+                           class="button is-primary is-outlined">
+                            <span>Больше информации</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="tile is-parent is-9">
+            <div class="card tile is-child">
+                <header class="card-header">
+                    <p class="card-header-title">
+                        <span class="icon"><i class="mdi mdi-account-circle default"></i></span>
+                        Редактирования заказа
+                    </p>
+                </header>
+                <div class="card-content">
+
+                    <form method="POST" action="{% url 'edit_order_info' id=order.id %}">
+                        {% csrf_token %}
+
+                        <div class="field is-horizontal">
+                            <div class="field-label is-normal">
+                                <label class="label">Дата создания</label>
+                            </div>
+                            <div class="field-body">
+                                <div class="field mb-4">
+                                    <div class="control">
+                                        <label>
+                                            <input type="text" readonly
+                                                   value="{{ order.created_at }}"
+                                                   class="input is-static">
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field is-horizontal">
+                            <div class="field-label is-normal">
+                                <label class="label">Автомобиль</label>
+                            </div>
+                            <div class="field-body">
+                                <div class="field mb-4">
+                                    <div class="control">
+                                        <div class="select is-fullwidth">
+                                            <label>
+                                                <select name="car" class="select" required>
+                                                    <option value="{{ order.car.id }}">
+                                                        {{ order.car.brand }}
+                                                        {{ order.car.model }} | {{ order.car.year }}
+                                                        | {{ order.car.fuel_type }}
+                                                        | {{ order.car.horsepower }} |
+                                                        {{ order.car.transmission }}{{ order.car.engine_size }}
+                                                        | {{ order.car.color }} | {{ order.car.equipment }}
+                                                        | {{ order.car.price }} $
+                                                    </option>
+                                                    {% for car in cars %}
+                                                        <option value="{{ car.id }}">{{ car.brand }}
+                                                            {{ car.model }} | {{ car.year }} | {{ car.fuel_type }}
+                                                            | {{ car.horsepower }} |
+                                                            {{ car.transmission }}{{ car.engine_size }}
+                                                            | {{ car.color }} | {{ car.equipment }} | {{ car.price }} $
+                                                        </option>
+                                                    {% endfor %}
+                                                </select>
+                                            </label>
+                                        </div>
+                                        <p class="help">Автомобиль заказа</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="field is-horizontal">
+                            <div class="field-label is-normal">
+                                <label class="label">Способ оплаты</label>
+                            </div>
+                            <div class="field-body mb-4">
+                                <div class="field">
+                                    <div class="control">
+                                        <div class="select is-fullwidth">
+                                            <label>
+                                                <select name="payment_method" required>
+                                                    <option value="{{ order.payment_method }}">{{ order.payment_method }}</option>
+                                                    {% for choice in payment_method_choices %}
+                                                        <option value="{{ choice.0 }}">{{ choice.1 }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </label>
+                                        </div>
+                                        <p class="help">Каким образом клиент оплачивает заказ?</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="field is-horizontal">
+                            <div class="field-label is-normal">
+                                <label class="label">Прогресс оплаты</label>
+                            </div>
+                            <div class="field-body">
+                                <div class="field mb-4">
+                                    <div class="control">
+                                        <label>
+                                            <input type="number" name="payment_progress"
+                                                   value="{{ order.payment_progress }}"
+                                                   class="input" required>
+                                        </label>
+                                    </div>
+                                    <p class="help">Сколько средств клиент внёс за заказ?</p>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="field is-horizontal">
+                            <div class="field-label is-normal">
+                                <label class="label">Статус</label>
+                            </div>
+                            <div class="field-body mb-4">
+                                <div class="field">
+                                    <div class="control">
+                                        <div class="select is-fullwidth">
+                                            <label>
+                                                <select name="status" required>
+                                                    <option value="{{ order.status }}">{{ order.status }}</option>
+                                                    {% for choice in status_choices %}
+                                                        <option value="{{ choice.0 }}">{{ choice.1 }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </label>
+                                        </div>
+                                        <p class="help">Статус заказа</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field is-horizontal">
+                            <div class="field-label is-normal">
+                                <label class="label">Страховка</label>
+                            </div>
+                            <div class="field-body">
+                                <div class="field mb-4">
+                                    <div class="control">
+                                        <label class="checkbox">
+                                            <input class="b-checkbox checkbox" type="checkbox"
+                                                   name="insurance_required"
+                                                    {% if order.insurance_required %}
+                                                   checked
+                                                    {% endif %}>
+                                            <span class="control-label">Да</span>
+                                        </label>
+                                    </div>
+                                    <p class="help">Нужна ли клиенту страховка?</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field is-horizontal">
+                            <div class="field-label is-normal">
+                                <label class="label">Услуги дилера</label>
+                            </div>
+                            <div class="field-body">
+                                <div class="field mb-4">
+                                    <div class="control">
+                                        <label class="checkbox">
+                                            <input class="b-checkbox checkbox" type="checkbox"
+                                                   name="dealer_service_required"
+                                                    {% if order.dealer_service_required %}
+                                                   checked
+                                                    {% endif %}>
+                                            <span class="control-label">Yes</span>
+                                        </label>
+                                    </div>
+                                    <p class="help">Нужны ли клиенту услуги дилера?</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field is-horizontal">
+                            <div class="field-label is-normal">
+                                <label class="label">Общая стоимость</label>
+                            </div>
+                            <div class="field-body">
+                                <div class="field mb-4">
+                                    <div class="control">
+                                        <label>
+                                            <input type="number" name="total_price"
+                                                   value="{{ order.total_price }}"
+                                                   class="input" required>
+                                        </label>
+                                    </div>
+                                    <p class="help">Введите общую стоимость заказа</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field is-horizontal">
+                            <div class="field-label is-normal">
+                                <label class="label">Дополнительный сервис</label>
+                            </div>
+                            <div class="field-body">
+                                <div class="field mb-4">
+                                    <div class="control">
+                                        <label>
+                                            <textarea name="additional_services"
+                                                      class="textarea">{{ order.additional_services|default_if_none:'' }}</textarea>
+                                        </label>
+                                    </div>
+                                    <p class="help">В каких дополнительных услугах нуждается клиент?</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field is-horizontal">
+                            <div class="field-label is-normal">
+                                <label class="label">Примечания</label>
+                            </div>
+                            <div class="field-body">
+                                <div class="field mb-4">
+                                    <div class="control">
+                                        <label>
+                                            <textarea name="preferences"
+                                                      class="textarea">{{ order.preferences|default_if_none:'' }}</textarea>
+                                        </label>
+                                    </div>
+                                    <p class="help">Напишите любые примечания к заказу</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% if user.is_superuser or request.user|has_group:"managers" %}
+                            <div class="field is-horizontal">
+                                <div class="field-label is-normal"></div>
+                                <div class="field-body">
+                                    <div class="field">
+                                        <div class="control">
+                                            <button type="submit" class="button is-primary">
+                                                Подтвердить
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
